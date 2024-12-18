@@ -10,15 +10,12 @@ import AdminPanel from "./pages/AdminPanel";
 
 const queryClient = new QueryClient();
 
-// We'll store this temporarily in localStorage until we set up Supabase
-const CLERK_PUBLISHABLE_KEY = localStorage.getItem('CLERK_PUBLISHABLE_KEY');
-
-if (!CLERK_PUBLISHABLE_KEY) {
-  console.error('Missing Clerk Publishable Key');
+if (!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY) {
+  throw new Error('Missing Clerk Publishable Key');
 }
 
 const App = () => (
-  <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY || ''}>
+  <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />

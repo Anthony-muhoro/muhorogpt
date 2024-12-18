@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Send } from "lucide-react";
+import { MessageSquare, Send, Loader } from "lucide-react";
+import { useUser } from "@clerk/clerk-react";
+import { getGeminiResponse } from "@/lib/gemini";
 
 interface Message {
   id: string;
@@ -15,10 +17,11 @@ const Index = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user, isSignedIn } = useUser();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -31,8 +34,7 @@ const Index = () => {
     setIsLoading(true);
 
     try {
-      // Here we'll integrate with Gemini API later
-      const response = "This is a placeholder response. We'll integrate with Gemini API soon!";
+      const response = await getGeminiResponse(input);
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -51,6 +53,20 @@ const Index = () => {
       setIsLoading(false);
     }
   };
+
+  if (!isSignedIn) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-primary mb-4">Welcome to Muhoro GPT</h1>
+          <p className="text-muted-foreground mb-8">Please sign in to continue</p>
+          <Button onClick={() => window.location.href = "/sign-in"}>
+            Sign In
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-background">
@@ -113,7 +129,7 @@ const Index = () => {
               disabled={isLoading}
             />
             <Button type="submit" disabled={isLoading || !input.trim()}>
-              <Send className="w-4 h-4" />
+              {isLoading ? <Loader className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </Button>
           </div>
         </form>
