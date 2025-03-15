@@ -1,10 +1,11 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Send, Loader } from "lucide-react";
+import { MessageSquare, Send, Loader, AlertCircle } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
-import { getGeminiResponse } from "@/lib/gemini";
+import { getGeminiResponse, initGeminiAPI, isGeminiInitialized } from "@/lib/gemini";
 
 interface Message {
   id: string;
@@ -16,12 +17,57 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [geminiKey, setGeminiKey] = useState<string | null>(localStorage.getItem('gemini_key'));
+  const [showKeyInput, setShowKeyInput] = useState(!localStorage.getItem('gemini_key'));
   const { toast } = useToast();
   const { user } = useUser();
+
+  useEffect(() => {
+    if (geminiKey) {
+      const success = initGeminiAPI(geminiKey);
+      if (!success) {
+        toast({
+          title: "API Error",
+          description: "Could not initialize Gemini API with the provided key",
+          variant: "destructive",
+        });
+        setShowKeyInput(true);
+      }
+    }
+  }, [geminiKey, toast]);
+
+  const handleKeySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const input = (e.target as HTMLFormElement).key.value;
+    localStorage.setItem('gemini_key', input);
+    setGeminiKey(input);
+    initGeminiAPI(input);
+    setShowKeyInput(false);
+    toast({
+      title: "API Key Saved",
+      description: "Your Gemini API key has been saved",
+    });
+  };
+
+  const resetKey = () => {
+    localStorage.removeItem('gemini_key');
+    setGeminiKey(null);
+    setShowKeyInput(true);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
+    
+    if (!isGeminiInitialized()) {
+      toast({
+        title: "API Not Initialized",
+        description: "Please set your Gemini API key first",
+        variant: "destructive",
+      });
+      setShowKeyInput(true);
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -46,17 +92,53 @@ const Chat = () => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to get response from AI",
+        description: "Failed to get response from AI. Please check your API key.",
         variant: "destructive",
       });
+      setShowKeyInput(true);
     } finally {
       setIsLoading(false);
     }
   };
 
+  if (showKeyInput) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] max-w-md mx-auto p-4">
+        <div className="glass-morphism p-6 rounded-lg w-full">
+          <h2 className="text-xl font-bold mb-4 text-primary">Enter Gemini API Key</h2>
+          <p className="text-muted-foreground mb-4">
+            To use the chat feature, please enter your Google Gemini API key.
+          </p>
+          <form onSubmit={handleKeySubmit} className="space-y-4">
+            <Input 
+              name="key"
+              type="text"
+              placeholder="AI..."
+              required
+              className="w-full"
+            />
+            <Button type="submit" className="w-full">
+              Save Key
+            </Button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-2rem)] max-w-4xl mx-auto">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <MessageSquare className="w-12 h-12 text-primary mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Start a Conversation</h2>
+            <p className="text-muted-foreground">
+              Type your message below to chat with Muhoro GPT
+            </p>
+          </div>
+        )}
+        
         {messages.map((message) => (
           <div
             key={message.id}
@@ -75,6 +157,7 @@ const Chat = () => {
             </div>
           </div>
         ))}
+        
         {isLoading && (
           <div className="flex items-center space-x-2 p-4">
             <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
@@ -95,6 +178,15 @@ const Chat = () => {
           />
           <Button type="submit" disabled={isLoading || !input.trim()}>
             {isLoading ? <Loader className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          </Button>
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="icon" 
+            onClick={resetKey}
+            title="Change API Key"
+          >
+            <AlertCircle className="w-4 h-4" />
           </Button>
         </div>
       </form>
