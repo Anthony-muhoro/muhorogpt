@@ -1,16 +1,31 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Send, Loader, AlertCircle } from "lucide-react";
+import { MessageSquare, Send, Loader, AlertCircle, Trash, Plus } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
-import { getGeminiResponse, initGeminiAPI, isGeminiInitialized } from "@/lib/gemini";
+import { 
+  getGeminiResponse, 
+  initGeminiAPI, 
+  isGeminiInitialized, 
+  saveChat, 
+  loadChat, 
+  createNewChat,
+  getChatHistory 
+} from "@/lib/gemini";
 
 interface Message {
   id: string;
   content: string;
   role: "user" | "assistant";
+}
+
+interface ChatHistory {
+  id: string;
+  title: string;
+  messages: Message[];
+  createdAt: string;
 }
 
 const Chat = () => {
@@ -19,8 +34,10 @@ const Chat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [geminiKey, setGeminiKey] = useState<string | null>(localStorage.getItem('gemini_key'));
   const [showKeyInput, setShowKeyInput] = useState(!localStorage.getItem('gemini_key'));
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
   const { toast } = useToast();
   const { user } = useUser();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (geminiKey) {
@@ -32,9 +49,35 @@ const Chat = () => {
           variant: "destructive",
         });
         setShowKeyInput(true);
+      } else {
+        // Load chat history
+        loadChatHistory();
+        
+        // Load current chat if any
+        const currentChatId = localStorage.getItem('current_chat_id');
+        if (currentChatId) {
+          const chatMessages = loadChat(currentChatId);
+          if (chatMessages) {
+            setMessages(chatMessages);
+          }
+        }
       }
     }
   }, [geminiKey, toast]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const loadChatHistory = async () => {
+    try {
+      const history = await getChatHistory();
+      setChatHistory(history);
+    } catch (error) {
+      console.error("Error loading chat history:", error);
+    }
+  };
 
   const handleKeySubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +123,9 @@ const Chat = () => {
     setIsLoading(true);
 
     try {
+      // Save the user message
+      saveChat(userMessage);
+      
       const response = await getGeminiResponse(input);
       
       const assistantMessage: Message = {
@@ -89,15 +135,41 @@ const Chat = () => {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
+      
+      // Save the assistant response
+      saveChat(assistantMessage);
+      
+      // Refresh chat history
+      loadChatHistory();
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to get response from AI. Please check your API key.",
+        description: error.message || "Failed to get response from AI. Please check your API key.",
         variant: "destructive",
       });
-      setShowKeyInput(true);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleNewChat = () => {
+    createNewChat();
+    setMessages([]);
+    toast({
+      title: "New Chat",
+      description: "Started a new conversation"
+    });
+    loadChatHistory();
+  };
+
+  const handleLoadChat = (chatId: string) => {
+    const chatMessages = loadChat(chatId);
+    if (chatMessages) {
+      setMessages(chatMessages);
+      toast({
+        title: "Chat Loaded",
+        description: "Loaded previous conversation"
+      });
     }
   };
 
@@ -113,7 +185,7 @@ const Chat = () => {
             <Input 
               name="key"
               type="text"
-              placeholder="AI..."
+              placeholder="Enter your Gemini API key"
               required
               className="w-full"
             />
@@ -165,6 +237,8 @@ const Chat = () => {
             <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0.4s" }} />
           </div>
         )}
+        
+        <div ref={messagesEndRef} />
       </div>
 
       <form onSubmit={handleSubmit} className="p-4 glass-morphism">

@@ -1,69 +1,92 @@
-# Welcome to your Lovable project
 
-## Project info
+# Muhoro GPT - AI Chat Assistant
 
-**URL**: https://lovable.dev/projects/8de2a759-e8ae-43a3-924f-cf41d6e6a28e
+Muhoro GPT is an intelligent AI-powered chat assistance application built with React, Vite, TypeScript, and Tailwind CSS. It provides a responsive and intuitive interface for users to interact with Google's Gemini AI.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **Secure Authentication**: User authentication powered by Clerk with JWT tokens
+- **AI Chat Interface**: Responsive chat UI with typing indicators and message history
+- **Dark Mode Support**: Toggle between light and dark themes
+- **Chat History Management**: Create, view, and delete previous conversations
+- **User Settings**: Customize appearance, notifications, and API keys
+- **Admin Panel**: Manage application settings and preferences
 
-**Use Lovable**
+## Getting Started
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/8de2a759-e8ae-43a3-924f-cf41d6e6a28e) and start prompting.
+### Prerequisites
 
-Changes made via Lovable will be committed automatically to this repo.
+- Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Clerk account for authentication - [Sign up here](https://clerk.dev/)
+- Google Gemini API key - [Get it here](https://ai.google.dev/)
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# Navigate to the project directory
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Configuration
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+When you first run the application, you'll be prompted to enter:
 
-**Use GitHub Codespaces**
+1. Your Clerk publishable key (starts with `pk_`)
+2. Your Google Gemini API key
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+These keys are stored securely in your browser's local storage and are only used on your device.
 
-## What technologies are used for this project?
+## Usage
 
-This project is built with .
+### Authentication
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+The app uses Clerk for authentication. You can sign up with email, or use social providers if configured.
 
-## How can I deploy this project?
+### Chat Interface
 
-Simply open [Lovable](https://lovable.dev/projects/8de2a759-e8ae-43a3-924f-cf41d6e6a28e) and click on Share -> Publish.
+- Type messages in the input field at the bottom of the chat window
+- Create new conversations with the + button in the sidebar
+- View your chat history in the sidebar
+- Delete conversations you no longer need
 
-## I want to use a custom domain - is that possible?
+### Settings
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+Access the Settings panel to:
+- Toggle between dark and light mode
+- Configure notification preferences
+- Update your API keys
+
+## Project Structure
+
+- `/src` - Source code
+  - `/components` - Reusable UI components
+  - `/pages` - Application pages (Chat, Dashboard, Admin, etc.)
+  - `/lib` - Utility functions and API integrations
+  - `/hooks` - Custom React hooks
+
+## Technologies Used
+
+- [React](https://reactjs.org/) - UI library
+- [Vite](https://vitejs.dev/) - Build tool and development server
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+- [Clerk](https://clerk.dev/) - Authentication and user management
+- [Google Gemini AI](https://ai.google.dev/) - AI model for chat
+- [Shadcn UI](https://ui.shadcn.com/) - UI component library
+
+## License
+
+This project is licensed under the MIT License.
+
+## Acknowledgements
+
+- Built with [Lovable](https://lovable.dev/) - an AI editor for creating web applications
