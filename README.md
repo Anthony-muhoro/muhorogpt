@@ -7,10 +7,9 @@ Muhoro GPT is an intelligent AI-powered chat assistance application built with R
 
 - **Secure Authentication**: User authentication powered by Clerk with JWT tokens
 - **AI Chat Interface**: Responsive chat UI with typing indicators and message history
-- **Dark Mode Support**: Toggle between light and dark themes
+- **Dark/Light Mode**: Toggle between light and dark themes for comfortable viewing
 - **Chat History Management**: Create, view, and delete previous conversations
 - **User Settings**: Customize appearance, notifications, and API keys
-- **Admin Panel**: Manage application settings and preferences
 
 ## Getting Started
 
@@ -19,6 +18,11 @@ Muhoro GPT is an intelligent AI-powered chat assistance application built with R
 - Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 - Clerk account for authentication - [Sign up here](https://clerk.dev/)
 - Google Gemini API key - [Get it here](https://ai.google.dev/)
+
+### API Key Notes
+
+- This application uses Gemini 1.5 Flash model which is available in the free tier
+- Make sure your Gemini API key has access to the Gemini 1.5 Flash model
 
 ### Installation
 
@@ -64,14 +68,6 @@ Access the Settings panel to:
 - Toggle between dark and light mode
 - Configure notification preferences
 - Update your API keys
-
-## Project Structure
-
-- `/src` - Source code
-  - `/components` - Reusable UI components
-  - `/pages` - Application pages (Chat, Dashboard, Admin, etc.)
-  - `/lib` - Utility functions and API integrations
-  - `/hooks` - Custom React hooks
 
 ## Technologies Used
 
