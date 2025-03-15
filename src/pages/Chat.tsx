@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Send, Loader, AlertCircle, Magic } from "lucide-react";
+import { MessageSquare, Send, Loader, AlertCircle, Wand2 } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import { 
   getGeminiResponse, 
@@ -246,7 +246,7 @@ const Chat = () => {
             {showSuggestions && (
               <div className="w-full max-w-md">
                 <h3 className="text-sm font-medium mb-2 flex items-center">
-                  <Magic className="w-4 h-4 mr-1" />
+                  <Wand2 className="w-4 h-4 mr-1" />
                   Try asking about:
                 </h3>
                 <div className="flex flex-wrap gap-2">
