@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser, useClerk } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   MessageSquare, 
   LayoutDashboard, 
@@ -12,7 +13,6 @@ import {
   X,
   PlusCircle,
   Trash2,
-  Monitor,
   Moon,
   Sun,
 } from "lucide-react";
@@ -34,19 +34,22 @@ interface ChatItem {
 }
 
 const Layout = ({ children }: LayoutProps) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatItem[]>([]);
   const [activeChat, setActiveChat] = useState<string | null>(localStorage.getItem('current_chat_id'));
   const [theme, setTheme] = useState<string>(localStorage.getItem('theme') || 'dark');
   const navigate = useNavigate();
   const { user } = useUser();
   const { signOut } = useClerk();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     loadChatHistory();
     // Apply theme
     document.documentElement.classList.toggle('dark', theme === 'dark');
-  }, [theme]);
+    // Open sidebar by default on desktop
+    setSidebarOpen(!isMobile);
+  }, [theme, isMobile]);
 
   const loadChatHistory = async () => {
     try {
@@ -61,12 +64,14 @@ const Layout = ({ children }: LayoutProps) => {
     createNewChat();
     setActiveChat(null);
     navigate('/chat');
+    if (isMobile) setSidebarOpen(false);
   };
 
   const handleChatSelect = (chatId: string) => {
     loadChat(chatId);
     setActiveChat(chatId);
     navigate('/chat');
+    if (isMobile) setSidebarOpen(false);
   };
 
   const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
@@ -98,7 +103,7 @@ const Layout = ({ children }: LayoutProps) => {
     {
       icon: Settings,
       label: "Settings",
-      path: "/admin"
+      path: "/chat"
     }
   ];
 
@@ -108,7 +113,7 @@ const Layout = ({ children }: LayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex flex-col md:flex-row bg-background">
       {/* Mobile menu button */}
       <Button
         variant="ghost"
@@ -119,15 +124,24 @@ const Layout = ({ children }: LayoutProps) => {
         {sidebarOpen ? <X /> : <Menu />}
       </Button>
 
+      {/* Sidebar overlay for mobile */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/40 z-30"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <div className={`
-        fixed md:static inset-y-0 left-0 z-40
-        w-64 glass-morphism transform transition-transform duration-300 ease-in-out
+        fixed md:relative inset-y-0 left-0 z-40
+        w-[280px] glass-morphism transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        md:translate-x-0
+        md:translate-x-0 h-full
+        overflow-hidden flex flex-col
       `}>
-        <div className="flex flex-col h-full p-4">
-          <div className="flex items-center space-x-2 mb-8">
+        <div className="flex flex-col h-screen p-4 overflow-hidden">
+          <div className="flex items-center space-x-2 mb-8 pt-2">
             <MessageSquare className="w-6 h-6 text-primary" />
             <h1 className="text-xl font-bold">Muhoro GPT</h1>
           </div>
@@ -144,7 +158,7 @@ const Layout = ({ children }: LayoutProps) => {
             </Button>
           </div>
 
-          <div className="space-y-1 mb-6 overflow-y-auto flex-1">
+          <div className="space-y-1 mb-6 overflow-y-auto flex-1 scrollbar-none">
             {chatHistory.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-2">No chats yet</p>
             ) : (
@@ -171,13 +185,16 @@ const Layout = ({ children }: LayoutProps) => {
             )}
           </div>
 
-          <nav className="flex-1 space-y-2">
+          <nav className="space-y-2">
             {menuItems.map((item) => (
               <Button
                 key={item.path}
                 variant="ghost"
                 className="w-full justify-start"
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  navigate(item.path);
+                  if (isMobile) setSidebarOpen(false);
+                }}
               >
                 <item.icon className="mr-2 h-4 w-4" />
                 {item.label}
@@ -185,7 +202,7 @@ const Layout = ({ children }: LayoutProps) => {
             ))}
           </nav>
 
-          <div className="pt-4 border-t border-border">
+          <div className="pt-4 border-t border-border mt-4">
             <div className="flex justify-between mb-4">
               <Button 
                 variant="ghost" 
@@ -226,8 +243,10 @@ const Layout = ({ children }: LayoutProps) => {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 p-4 md:p-8">
-        {children}
+      <div className="flex-1 md:pl-0 w-full h-screen overflow-y-auto">
+        <div className="p-4 pt-16 md:pt-4 md:p-8">
+          {children}
+        </div>
       </div>
     </div>
   );

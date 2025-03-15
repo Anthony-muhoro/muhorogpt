@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Send, Loader, AlertCircle, Trash, Plus } from "lucide-react";
+import { MessageSquare, Send, Loader, AlertCircle, Magic } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import { 
   getGeminiResponse, 
@@ -14,6 +14,7 @@ import {
   createNewChat,
   getChatHistory 
 } from "@/lib/gemini";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   id: string;
@@ -28,6 +29,15 @@ interface ChatHistory {
   createdAt: string;
 }
 
+// Cool feature: Message suggestions
+const messageSuggestions = [
+  "Tell me about artificial intelligence",
+  "What's the weather like today?",
+  "How does blockchain technology work?",
+  "Write a short poem about nature",
+  "Explain quantum computing in simple terms",
+];
+
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -35,9 +45,11 @@ const Chat = () => {
   const [geminiKey, setGeminiKey] = useState<string | null>(localStorage.getItem('gemini_key'));
   const [showKeyInput, setShowKeyInput] = useState(!localStorage.getItem('gemini_key'));
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const { toast } = useToast();
   const { user } = useUser();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (geminiKey) {
@@ -59,6 +71,7 @@ const Chat = () => {
           const chatMessages = loadChat(currentChatId);
           if (chatMessages) {
             setMessages(chatMessages);
+            setShowSuggestions(false);
           }
         }
       }
@@ -112,6 +125,9 @@ const Chat = () => {
       return;
     }
 
+    // Hide suggestions after first message
+    setShowSuggestions(false);
+
     const userMessage: Message = {
       id: Date.now().toString(),
       content: input,
@@ -152,9 +168,14 @@ const Chat = () => {
     }
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setInput(suggestion);
+  };
+
   const handleNewChat = () => {
     createNewChat();
     setMessages([]);
+    setShowSuggestions(true);
     toast({
       title: "New Chat",
       description: "Started a new conversation"
@@ -166,6 +187,7 @@ const Chat = () => {
     const chatMessages = loadChat(chatId);
     if (chatMessages) {
       setMessages(chatMessages);
+      setShowSuggestions(false);
       toast({
         title: "Chat Loaded",
         description: "Loaded previous conversation"
@@ -199,15 +221,49 @@ const Chat = () => {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] max-w-4xl mx-auto">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex flex-col h-[calc(100vh-2rem)] md:h-[calc(100vh-4rem)] max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Chat with AI</h2>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleNewChat}
+          className="flex items-center space-x-1"
+        >
+          <span>New Chat</span>
+        </Button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto rounded-lg glass-morphism bg-opacity-30 p-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <MessageSquare className="w-12 h-12 text-primary mb-4" />
             <h2 className="text-2xl font-bold mb-2">Start a Conversation</h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-6">
               Type your message below to chat with Muhoro GPT
             </p>
+            
+            {showSuggestions && (
+              <div className="w-full max-w-md">
+                <h3 className="text-sm font-medium mb-2 flex items-center">
+                  <Magic className="w-4 h-4 mr-1" />
+                  Try asking about:
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {messageSuggestions.map((suggestion, index) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      size="sm"
+                      className="truncate max-w-full whitespace-normal text-left h-auto py-1.5"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                    >
+                      {suggestion}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
         
@@ -219,7 +275,7 @@ const Chat = () => {
             }`}
           >
             <div
-              className={`max-w-[80%] p-4 rounded-lg ${
+              className={`max-w-[85%] sm:max-w-[80%] p-3 rounded-lg ${
                 message.role === "assistant"
                   ? "bg-secondary"
                   : "bg-primary text-primary-foreground"
@@ -241,7 +297,7 @@ const Chat = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={handleSubmit} className="p-4 glass-morphism">
+      <form onSubmit={handleSubmit} className="mt-4 glass-morphism rounded-lg p-3">
         <div className="flex space-x-2">
           <Input
             value={input}

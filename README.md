@@ -9,7 +9,9 @@ Muhoro GPT is an intelligent AI-powered chat assistance application built with R
 - **AI Chat Interface**: Responsive chat UI with typing indicators and message history
 - **Dark/Light Mode**: Toggle between light and dark themes for comfortable viewing
 - **Chat History Management**: Create, view, and delete previous conversations
-- **User Settings**: Customize appearance, notifications, and API keys
+- **User Settings**: Customize appearance and API keys
+- **Message Suggestions**: Quick-start prompts to help begin conversations
+- **Fully Responsive**: Works seamlessly on desktop, tablet, and mobile devices
 
 ## Getting Started
 
@@ -36,7 +38,11 @@ cd <YOUR_PROJECT_NAME>
 # Install dependencies
 npm install
 
-# Start the development server
+# Copy the example environment file
+cp .env.example .env.local
+
+# Edit the .env.local file with your API keys
+# Then start the development server
 npm run dev
 ```
 
@@ -58,16 +64,20 @@ The app uses Clerk for authentication. You can sign up with email, or use social
 ### Chat Interface
 
 - Type messages in the input field at the bottom of the chat window
+- Use the suggested prompts to quickly start conversations
 - Create new conversations with the + button in the sidebar
 - View your chat history in the sidebar
 - Delete conversations you no longer need
+- Toggle between dark and light mode for comfortable viewing
 
-### Settings
+### Example Chat Prompts
 
-Access the Settings panel to:
-- Toggle between dark and light mode
-- Configure notification preferences
-- Update your API keys
+Try asking about:
+- "Tell me about artificial intelligence"
+- "What's the weather like today?"
+- "How does blockchain technology work?"
+- "Write a short poem about nature"
+- "Explain quantum computing in simple terms"
 
 ## Technologies Used
 

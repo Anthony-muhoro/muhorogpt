@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import Layout from "./components/Layout";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
-import AdminPanel from "./pages/AdminPanel";
 import Chat from "./pages/Chat";
 
 const queryClient = new QueryClient();
@@ -116,19 +115,10 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <AdminPanel />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
-          <div className="fixed bottom-4 right-4">
+          <div className="fixed bottom-4 right-4 z-10">
             <Button variant="outline" size="sm" onClick={resetKey}>
               Reset Clerk Key
             </Button>
